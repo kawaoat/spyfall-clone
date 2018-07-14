@@ -28,7 +28,6 @@
         </b-row>
         <div>
         </div>
-        <p>ThisSpyfall designed by Alexandr Ushan, published by Hobby World</p>
       </div>
     </b-container>
     {{currentState}}
@@ -64,14 +63,13 @@ export default {
 
 <style lang="scss" scoped>
   .spy-container {
-      border: 1px solid;
-      border-color: lightgrey;
-      border-radius: 16px;
-      margin: 10% auto;
-      padding-top: 1rem;
-  }
-  @media(min-width: 576px){
-    .spy-container {
+    border: 1px solid;
+    border-color: lightgrey;
+    border-radius: 16px;
+    margin: 10% auto;
+    padding-top: 1rem;
+
+    @media(min-width: 576px){
       max-width: 540px;
     }
   }
