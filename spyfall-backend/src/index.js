@@ -10,6 +10,7 @@ import Locationlist from './constants/locations'
 import Player from './player'
 
 import { getRandomInt } from './utils'
+const GAME_TIME = 2
 const app = Express()
 const server = Http.createServer(app)
 
@@ -33,6 +34,7 @@ io.on('connection', socket => {
     socket.emit('room', getRoomData(roomID))
   })
   socket.on('join', data => {
+    socket.roomID = data.roomID
     console.log(data.playerName, ' join to ', data.roomID)
     joinRoom(data.roomID, socket.id, data.playerName, socket)
     io.emit('room', getRoomData(data.roomID))
@@ -47,7 +49,7 @@ io.on('connection', socket => {
         p.socket.emit('playerLocationAndRole', p.getLocationAndRole())
       })
       // startGame(data.roomID)
-      let TimelengthInMinutes = 1 / 12
+      let TimelengthInMinutes = GAME_TIME
       room.endTime = Moment().add(TimelengthInMinutes, 'minutes')
       room.currentTime = Moment()
       room.gameState = GAMESTATES.PLAYING
@@ -69,7 +71,18 @@ io.on('connection', socket => {
   socket.on('spyAnswer', data => {
     let room = Lodash.find(roomList, room => room.roomID === data.roomID)
     if (!room) return
+    console.log('spyAnswer', room.spyAnswer)
     room.spyAnswer = data.spyAnswer
+  })
+  socket.on('disconnect', data => {
+    let room = Lodash.find(roomList, room => room.roomID === socket.roomID)
+    if (room) {
+      Lodash.remove(room.playerList, p => p.playerID === socket.id)
+      let players = Lodash.map(room.playerList, p => p)
+      if (players.length <= 0) {
+        Lodash.remove(roomList, r => r === room)
+      }
+    }
   })
 })
 
@@ -107,21 +120,24 @@ const createRoom = roomID => {
     playerList: [],
     mostVotedPlayer: '',
     spyAnswer: '',
-    location:'',
+    location: '',
     curentTime: '',
-    endTime: ''
+    endTime: '',
+    roomInterval: null,
+    mostVotedPlayerList: []
   }
   roomList.push(room)
 }
 
 const gameLoop = roomID => {
+  // let currentRoom = Lodash.find(roomList, room => room.roomID === roomID)
   let interval = setInterval(() => {
     let room = Lodash.find(roomList, room => room.roomID === roomID)
     if (!room) return
-    if (room.gameState == GAMESTATES.PLAYING) {
+    if (room.gameState === GAMESTATES.PLAYING) {
       room.currentTime = Moment()
       if (Moment() >= room.endTime) {
-        let TimelengthInMinutes = 1 / 6
+        let TimelengthInMinutes = 1 / 4
         room.endTime = Moment().add(TimelengthInMinutes, 'minutes')
         room.gameState = GAMESTATES.VOTING
         Lodash.map(room.playerList, p => {
@@ -131,18 +147,20 @@ const gameLoop = roomID => {
         room.currentTime = Moment() // update time
         emitPlayerInRoom(room, 'room', getRoomData(roomID))
       }
-    } else if (room.gameState == GAMESTATES.VOTING) {
-      if (Moment() >= room.endTime) { 
+    } else if (room.gameState === GAMESTATES.VOTING) {
+      if (Moment() >= room.endTime) {
         let maxVoteCounter = 0
         let playerList = room.playerList
-        for(let i = 0; i < playerList.length; i++) { 
-          maxVoteCounter = (maxVoteCounter>playerList[i].voteCounter)?maxVoteCounter:playerList[i].voteCounter
-          if(playerList[i].role!=='Spy')
-            room.location = playerList[i].location
+        for (let i = 0; i < playerList.length; i++) {
+          maxVoteCounter =
+						maxVoteCounter > playerList[i].voteCounter ? maxVoteCounter : playerList[i].voteCounter
+          if (playerList[i].role !== 'Spy') room.location = playerList[i].location
         }
         room.mostVotedPlayer = Lodash.filter(playerList, p => p.voteCounter === maxVoteCounter)
-        let VotedSpyPlayer = (Lodash.find(room.mostVotedPlayer, p => p.role === 'Spy'))
-        if(VotedSpyPlayer && room.spyAnswer !== room.location){ //Case: spy is the most vote 
+        room.mostVotedPlayerList = Lodash.map(room.mostVotedPlayer, p => p.getData())
+        let VotedSpyPlayer = Lodash.find(room.mostVotedPlayer, p => p.role === 'Spy')
+        if (VotedSpyPlayer && room.spyAnswer !== room.location) {
+          // Case: spy is the most vote
           room.playerList = Lodash.map(room.playerList, p => {
             if (p.role === 'Spy') p.gameResult = 'lose'
             else p.gameResult = 'Win'
@@ -157,10 +175,9 @@ const gameLoop = roomID => {
         }
         room.gameState = GAMESTATES.ENDING
         Lodash.map(room.playerList, p => {
-          console.log(p)
+          console.log('game end')
           p.socket.emit('room', getRoomData(roomID))
           p.socket.emit('playerGameResult', p.getGameResult())
-          p.socket.emit('roomGameResult', getRoomResult(roomID))
         })
       } else {
         room.currentTime = Moment() // update time
@@ -211,19 +228,22 @@ const getRoomData = roomID => {
     gameState: room.gameState,
     playerList: getPlayerListByRoomID(roomID),
     curentTime: room.curentTime,
-    endTime: room.endTime
+    endTime: room.endTime,
+    location: room.location,
+    spyAnswer: room.spyAnswer,
+    mostVotedPlayerList: room.mostVotedPlayerList
   }
 }
 
-const getRoomResult = roomID => {
-  let room = Lodash.find(roomList, room => room.roomID === roomID)
-  if (!room) return null
-  return {
-    location: room.location,
-    spyAnswer: room.spyAnswer,
-    mostVotedPlayer: room.mostVotedPlayer
-  }
-}
+// const getRoomResult = roomID => {
+//   let room = Lodash.find(roomList, room => room.roomID === roomID)
+//   if (!room) return null
+//   return {
+//     location: room.location,
+//     spyAnswer: room.spyAnswer,
+//     mostVotedPlayer: room.mostVotedPlayer
+//   }
+// }
 
 server.listen(PORT, () => {
   console.log(`server is on port ${PORT}`)

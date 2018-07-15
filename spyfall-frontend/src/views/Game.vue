@@ -2,7 +2,7 @@
   <div class="home">
     <b-container class="spy-container">
       <div class="text-center">
-        <h1>SpyClone</h1>
+        <h1>SpyFall~</h1>
         <b-form-input class="spy-input" v-if="displayWhen([GAMESTATES.NEW,GAMESTATES.JOIN])"
           v-model="playerName" type="text" placeholder="Enter your name."></b-form-input>
         <b-form-input class="spy-input" v-if="displayWhen([GAMESTATES.JOIN])"
@@ -92,11 +92,10 @@
         </div>
 
         <div v-if="displayWhen([GAMESTATES.ENDING])">
-            <div>You {{playerGameResult}}</div>
-            <div>Location is {{roomGameResult.location}}</div>
-            <div>SpyAnswer is {{roomGameResult.spyAnswer}}</div>
-            <div>SpyAnswer is {{(roomGameResult.spyAnswer==room.location)?'correct':'incorrect'}}</div>
-            <div>The most vote is {{roomGameResult.mostVotedPlayer}}</div>
+            <div>You <strong>{{playerGameResult}}</strong></div>
+            <div>Location is <strong>{{room.location}}</strong></div>
+            <div>SpyAnswer is {{room.spyAnswer}} ({{(room.spyAnswer==room.location)?'correct':'incorrect'}})</div>
+            <!-- <div>The most vote is {{room.mostVotedPlayer}}</div> -->
             
         </div>
 
@@ -131,7 +130,8 @@ export default {
     }
   },
   created() {
-    let serverURL = 'localhost:8000'
+    let serverURL = '192.168.180.242:8000'
+    // 'localhost:8000'
     this.socket = io(serverURL)
     this.socket.on('connect', () => {
       this.playerID = this.socket.id
@@ -155,9 +155,6 @@ export default {
       this.socket.on('playerGameResult',playerGameResult => {
         this.playerGameResult = playerGameResult
       })
-      this.socket.on('roomGameResult', roomGameResult => {
-        this.roomGameResult = roomGameResult
-      })
     })
   },
   methods:{
@@ -165,10 +162,12 @@ export default {
       this.socket.emit('ready',{roomID:this.room.roomID})
     },
     onVote(votedPlayerID){
+      this.isVoted = true
       this.socket.emit('vote',{roomID:this.room.roomID, votedPlayerID })
     },
     sentSpyAnswer(spyAnswer){
-      this.socket.emit('vote',{spyAnswer})
+      this.isVoted = true
+      this.socket.emit('spyAnswer',{roomID:this.room.roomID,spyAnswer})
     },
     getDeltaTime(){
       if(!this.room) return ''

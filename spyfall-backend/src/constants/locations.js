@@ -4,6 +4,10 @@ export default [
     Roles: ['Armored Car Driver', 'Manager', 'Consultant', 'Robber', 'Security Guard', 'Teller', 'Customer']
   },
   {
+    Location: 'Stupid hackathon',
+    Roles: ['UX designer', 'Developer', 'Manager', 'House keeper', 'Coffee Maker']
+  },
+  {
     Location: 'Airplane',
     Roles: [
       'First Class Passenger',
