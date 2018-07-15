@@ -53,6 +53,13 @@
             </div>
         </div>
 
+        <div v-if="displayWhen([GAMESTATES.ENDING])">
+            Vote result
+            <div v-for="player in room.playerList" :key="player.playerID">
+              <b-button class="button w-100" @click="onVote(player.playerID)">{{player.playerName}} : {{player.voteCounter}}</b-button>
+            </div>
+        </div>
+
       </div>
     </b-container>
     {{room}}
@@ -91,12 +98,13 @@ export default {
     onReady(){
       this.socket.emit('ready',{roomID:this.room.roomID})
     },
-    onVote(playerID){
-      this.socket.emit('vote',{playerID})
+    onVote(votedPlayerID){
+      this.socket.emit('vote',{roomID:this.room.roomID, votedPlayerID })
+      this.setCurrentState(GAMESTATES.ENDING)
     },
     getDeltaTime(){
       if(!this.room) return ''
-      return Moment(Moment(this.room.gameEndTime )-Moment(this.room.gameStartTime)).format('mm:ss')
+      return Moment(Moment(this.room.endTime )-Moment(this.room.currentTime)).format('mm:ss')
     },
     displayWhen(states){
       return states.indexOf(this.currentState)>-1

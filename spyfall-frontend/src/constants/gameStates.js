@@ -4,5 +4,6 @@ export default {
 	JOIN: 'J',
 	WAITING: 'W',
 	PLAYING: 'P',
-	VOTING: 'V'
+	VOTING: 'V',
+	ENDING: 'E'
 };
