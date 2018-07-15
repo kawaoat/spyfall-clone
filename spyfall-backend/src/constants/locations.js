@@ -1,4 +1,4 @@
-export const locations = [
+export default [
   {
     Location: 'Bank',
     Roles: ['Armored Car Driver', 'Manager', 'Consultant', 'Robber', 'Security Guard', 'Teller', 'Customer']

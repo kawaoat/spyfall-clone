@@ -2,10 +2,14 @@ import Express from 'express'
 import Http from 'http'
 import Socket from 'socket.io'
 import ShortID from 'shortid'
-import Lodash from 'lodash'
-import GAMESTATES from './constants/gameStates'
 import Moment from 'moment'
+import Lodash from 'lodash'
+
+import GAMESTATES from './constants/gameStates'
+import Locationlist from './constants/locations'
 import Player from './player'
+
+import { getRandomInt } from './utils'
 const app = Express()
 const server = Http.createServer(app)
 
@@ -32,6 +36,7 @@ io.on('connection', socket => {
   socket.on('ready', data => {
     let checkReady = checkGameIsReady(data.roomID, socket.id)
     if (checkReady) {
+      assignLocationToRoom(data.roomID)
       startGame(data.roomID)
     }
     io.emit('room', getRoomData(data.roomID))
@@ -40,6 +45,22 @@ io.on('connection', socket => {
     console.log('vote', data)
   })
 })
+
+const assignLocationToRoom = roomID => {
+  let room = Lodash.find(roomList, room => room.roomID === roomID)
+  let locationAndRole = getRandomLocationAndRole()
+  let location = locationAndRole.Location
+}
+
+const getRandomLocationAndRole = () => {
+  let randInt = getRandomInt(Locationlist.length)
+  return Locationlist[randInt]
+}
+
+const getRandomRole = roles => {
+  let randInt = getRandomInt(roles.length)
+  return roles[randInt]
+}
 
 const createRoom = roomID => {
   roomList.push({

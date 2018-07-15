@@ -121,6 +121,7 @@ export default {
 
 <style lang="scss" scoped>
   .spy-container {
+    min-height: 320px;
     border: 1px solid;
     border-color: lightgrey;
     border-radius: 16px;

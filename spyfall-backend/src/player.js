@@ -4,6 +4,8 @@ export default class Player {
     this.playerID = playerID
     this.playerName = playerName
     this.isReady = false
+    this.role = ''
+    this.location = ''
   }
 
   getData () {
@@ -11,6 +13,13 @@ export default class Player {
       playerID: this.playerID,
       playerName: this.playerName,
       isReady: this.isReady
+    }
+  }
+
+  getLocationAndRole () {
+    return {
+      role: this.role,
+      location: this.location
     }
   }
 }
