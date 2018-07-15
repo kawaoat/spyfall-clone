@@ -6,6 +6,7 @@ export default class Player {
     this.isReady = false
     this.role = ''
     this.location = ''
+    this.voteCounter = 0
   }
 
   getData () {

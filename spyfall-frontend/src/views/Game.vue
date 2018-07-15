@@ -25,10 +25,10 @@
             <b-button class="button" @click="createRoom()">Create</b-button>
           </b-col>
           <b-col cols="6" v-if="displayWhen([GAMESTATES.JOIN])">
-            <b-button class="button" @click="joinRoom()">Join</b-button>
+            <b-button class="button" type="submit" @click="joinRoom()">Join</b-button>
           </b-col>
           <b-col cols="6">
-            <b-button class="button" @click="setCurrentState(GAMESTATES.INITIAL)">Back</b-button>
+            <b-button class="button" type="reset" @click="setCurrentState(GAMESTATES.INITIAL)">Back</b-button>
           </b-col>
         </b-row>
         <b-row v-if="displayWhen([GAMESTATES.WAITING])">
@@ -49,8 +49,7 @@
         <div v-if="displayWhen([GAMESTATES.VOTING])">
             Voting who is spy!
             <div v-for="player in room.playerList" :key="player.playerID">
-              {{player.playerName}} 
-              <b-button class="button" @click="onVote(player.playerID)">Vote</b-button>
+              <b-button class="button w-100" @click="onVote(player.playerID)">{{player.playerName}}</b-button>
             </div>
         </div>
 
@@ -133,7 +132,7 @@ export default {
     }
   }
   .button{
-    margin: 1rem;
+    margin: 1rem auto;
   }
   .spy-input {
     margin: 1rem auto;
