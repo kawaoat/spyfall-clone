@@ -107,6 +107,7 @@ const createRoom = roomID => {
     playerList: [],
     mostVotedPlayer: '',
     spyAnswer: '',
+    location:'',
     curentTime: '',
     endTime: ''
   }
@@ -134,15 +135,14 @@ const gameLoop = roomID => {
       if (Moment() >= room.endTime) { 
         let maxVoteCounter = 0
         let playerList = room.playerList
-        let location = ''
         for(let i = 0; i < playerList.length; i++) { 
           maxVoteCounter = (maxVoteCounter>playerList[i].voteCounter)?maxVoteCounter:playerList[i].voteCounter
           if(playerList[i].role!=='Spy')
-            location = playerList[i].location
+            room.location = playerList[i].location
         }
         room.mostVotedPlayer = Lodash.filter(playerList, p => p.voteCounter === maxVoteCounter)
         let VotedSpyPlayer = (Lodash.find(room.mostVotedPlayer, p => p.role === 'Spy'))
-        if(VotedSpyPlayer && spyAnswer !== location){ //Case: spy is the most vote 
+        if(VotedSpyPlayer && room.spyAnswer !== room.location){ //Case: spy is the most vote 
           room.playerList = Lodash.map(room.playerList, p => {
             if (p.role === 'Spy') p.gameResult = 'lose'
             else p.gameResult = 'Win'
@@ -159,7 +159,8 @@ const gameLoop = roomID => {
         Lodash.map(room.playerList, p => {
           console.log(p)
           p.socket.emit('room', getRoomData(roomID))
-          p.socket.emit('gameResult', p.getGameResult())
+          p.socket.emit('playerGameResult', p.getGameResult())
+          p.socket.emit('roomGameResult', getRoomResult(roomID))
         })
       } else {
         room.currentTime = Moment() // update time
@@ -211,6 +212,16 @@ const getRoomData = roomID => {
     playerList: getPlayerListByRoomID(roomID),
     curentTime: room.curentTime,
     endTime: room.endTime
+  }
+}
+
+const getRoomResult = roomID => {
+  let room = Lodash.find(roomList, room => room.roomID === roomID)
+  if (!room) return null
+  return {
+    location: room.location,
+    spyAnswer: room.spyAnswer,
+    mostVotedPlayer: room.mostVotedPlayer
   }
 }
 

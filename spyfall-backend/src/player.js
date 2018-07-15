@@ -27,8 +27,6 @@ export default class Player {
   }
 
   getGameResult(){
-    return {
-      gameResult: this.gameResult
-    }
+    return this.gameResult
   }
 }

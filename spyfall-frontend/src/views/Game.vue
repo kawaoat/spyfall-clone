@@ -83,21 +83,20 @@
             Voting who is spy! {{getDeltaTime()}}
             <div v-if="isNotVoted()">
               <div v-if="isSpy()" v-for="location in locationList" :key="location.Location">
-                <b-button class="button w-100">{{location.Location}}</b-button>
+                <b-button class="button w-100" @click="sentSpyAnswer(location.Location)">{{location.Location}}</b-button>
               </div>
-
-                     <div  v-if="!isSpy()"  v-for="player in room.playerList" :key="player.playerID">
-              <b-button class="button w-100" @click="onVote(player.playerID)">{{player.playerName}} : {{player.voteCounter}}</b-button>
-            </div>
+              <div  v-if="!isSpy()"  v-for="player in room.playerList" :key="player.playerID">
+                <b-button class="button w-100" @click="onVote(player.playerID)">{{player.playerName}} : {{player.voteCounter}}</b-button>
+              </div>
             </div>
         </div>
 
         <div v-if="displayWhen([GAMESTATES.ENDING])">
-            <div>You {{gameResult}}</div>
-            <div>vote result</div>
-            <div v-for="player in room.playerList" :key="player.playerID">
-              <b-button class="button w-100" >{{player.playerName}} : {{player.voteCounter}}</b-button>
-            </div>
+            <div>You {{playerGameResult}}</div>
+            <div>Location is {{roomGameResult.location}}</div>
+            <div>SpyAnswer is {{roomGameResult.spyAnswer}}</div>
+            <div>SpyAnswer is {{(roomGameResult.spyAnswer==room.location)?'correct':'incorrect'}}</div>
+            <div>The most vote is {{roomGameResult.mostVotedPlayer}}</div>
             
         </div>
 
@@ -127,7 +126,8 @@ export default {
       role:'',
       location:'',
       isVoted:false,
-      gameResult:''
+      playerGameResult:'',
+      roomGameResult:{}
     }
   },
   created() {
@@ -152,8 +152,11 @@ export default {
         this.role = data.role
         this.location = data.location
       })
-      this.socket.on('gameResult',gameResult => {
-        this.gameResult = gameResult
+      this.socket.on('playerGameResult',playerGameResult => {
+        this.playerGameResult = playerGameResult
+      })
+      this.socket.on('roomGameResult', roomGameResult => {
+        this.roomGameResult = roomGameResult
       })
     })
   },
