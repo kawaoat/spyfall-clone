@@ -49,7 +49,19 @@ io.on('connection', socket => {
 const assignLocationToRoom = roomID => {
   let room = Lodash.find(roomList, room => room.roomID === roomID)
   let locationAndRole = getRandomLocationAndRole()
+  assignLocationAndRolePlayerInRoom(room, locationAndRole)
+}
+
+const assignLocationAndRolePlayerInRoom = (room, locationAndRole) => {
+  let spyIndex = getRandomInt(room.playerList.length)
   let location = locationAndRole.Location
+  let roles = locationAndRole.Roles
+  Lodash.map(room.playerList, p => {
+    p.role = getRandomRole(roles)
+    p.location = location
+  })
+  room.playerList[spyIndex].role = 'Spy'
+  room.playerList[spyIndex].location = ''
 }
 
 const getRandomLocationAndRole = () => {
@@ -89,9 +101,7 @@ const startGame = roomID => {
       clearInterval(interval)
     } else {
       room.gameStartTime = Moment() // update time
-      Lodash.map(room.playerList, p => {
-        p.socket.emit('room', getRoomData(roomID))
-      })
+      emitPlayerInRoom(room, 'room', getRoomData(roomID))
     }
   }, 1000)
 }
@@ -104,6 +114,11 @@ const checkGameIsReady = (roomID, playerID) => {
   return room.playerList.length === Lodash.filter(room.playerList, p => p.isReady === true).length
 }
 
+const emitPlayerInRoom = (room, event, data) => {
+  Lodash.map(room.playerList, p => {
+    p.socket.emit(event, data)
+  })
+}
 const joinRoom = (roomID, playerID, playerName, socket) => {
   let room = Lodash.find(roomList, room => room.roomID === roomID)
   if (!room) return
