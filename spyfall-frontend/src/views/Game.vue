@@ -85,19 +85,16 @@
               <div v-if="isSpy()" v-for="location in locationList" :key="location.Location">
                 <b-button class="button w-100">{{location.Location}}</b-button>
               </div>
-              <b-container v-else>
-                <b-row>
-                  <b-col v-for="player in room.playerList" :key="player.playerID" md="6">
-                    <b-button class="button w-100" @click="onVote(player.playerID)">{{player.playerName}} : {{player.voteCounter}}</b-button>
-                  </b-col>
-                </b-row>
-              </b-container>
+
+                     <div  v-if="!isSpy()"  v-for="player in room.playerList" :key="player.playerID">
+              <b-button class="button w-100" @click="onVote(player.playerID)">{{player.playerName}} : {{player.voteCounter}}</b-button>
+            </div>
             </div>
         </div>
 
         <div v-if="displayWhen([GAMESTATES.ENDING])">
-            You {{gameResult}}
-            vote result
+            <div>You {{gameResult}}</div>
+            <div>vote result</div>
             <div v-for="player in room.playerList" :key="player.playerID">
               <b-button class="button w-100" >{{player.playerName}} : {{player.voteCounter}}</b-button>
             </div>
@@ -106,7 +103,6 @@
 
       </div>
     </b-container>
-    {{playerID}}
     <!-- {{room}} -->
   </div>
 </template>
