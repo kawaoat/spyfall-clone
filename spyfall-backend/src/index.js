@@ -14,7 +14,7 @@ const GAME_TIME = 1.5
 const app = Express()
 const server = Http.createServer(app)
 
-const PORT = process.env.PORT || 8000
+const PORT = process.env.PORT || 8083
 const io = Socket(server)
 
 let roomList = []
