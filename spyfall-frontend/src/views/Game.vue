@@ -8,7 +8,7 @@
         <b-form-input class="spy-input" v-if="displayWhen([GAMESTATES.JOIN])"
           v-model="roomIDInput" type="text" placeholder="Enter access code."></b-form-input>
         <div v-if="displayWhen([GAMESTATES.WAITING])">
-          <h1>{{room.roomID}}</h1>
+          <h3>roomID : {{room.roomID}}</h3>
           <hr>
           <div v-for="player in room.playerList" :key="player.playerID">{{player.playerName}} isReady:{{player.isReady}}</div>
         </div>
@@ -47,16 +47,31 @@
   <b-btn v-b-toggle.collapse1 variant="info">Show role</b-btn>
   <b-collapse id="collapse1" class="mt-2">
     <b-card>
-      <p class="card-text">You are ...</p>
-      <p class="card-text">Location :</p>
+      <p class="card-text">You are :{{role}}.</p>
+      <p class="card-text" v-if="location" >Location :{{location}}</p>
     </b-card>
   </b-collapse>
 </div>
+
+ <b-list-group>
+              <b-container>
+                <h2>Player</h2>
+              <b-row>
+              <b-col v-for="player in room.playerList" :key="player.playerID" md="6">
+                <b-list-group-item v-if="playerID==player.playerID" variant="secondary" >{{player.playerName}}</b-list-group-item>
+                <b-list-group-item v-else>{{player.playerName}}</b-list-group-item>
+                
+              </b-col>
+              </b-row>
+              </b-container>
+</b-list-group>
+
+
             <b-list-group>
               <b-container>
                 <h2>Location</h2>
               <b-row>
-              <b-col v-for="location in locationList" :key="location.Location" cols="6">
+              <b-col v-for="location in locationList" :key="location.Location" md="6">
                 <b-list-group-item>{{location.Location}}</b-list-group-item>
               </b-col>
               </b-row>
@@ -74,7 +89,8 @@
 
       </div>
     </b-container>
-    {{room}}
+    {{playerID}}
+    <!-- {{room}} -->
   </div>
 </template>
 <script>
@@ -92,20 +108,33 @@ export default {
       roomIDInput:'',
       currentState:GAMESTATES.INITIAL,
       GAMESTATES:GAMESTATES,
-      locationList:LocationList
+      locationList:LocationList,
+      playerID:'',
+      socket:null,
+      role:'',
+      location:''
     }
   },
   created() {
     let serverURL = 'localhost:8000'
     this.socket = io(serverURL)
+    this.socket.on('connect', () => {
+    this.playerID = this.socket.id
     this.socket.on('room',(room)=>{
       this.room = room
+      console.log(room)
       if(this.room.gameState === GAMESTATES.PLAYING){
         this.setCurrentState(GAMESTATES.PLAYING)
       }
       else if(this.room.gameState === GAMESTATES.VOTING){
         this.setCurrentState(GAMESTATES.VOTING)
       }
+    })
+
+    this.socket.on('playerLocationAndRole',data=>{
+      this.role = data.role
+      this.location = data.location
+    })
     })
   },
   methods:{
@@ -117,7 +146,7 @@ export default {
     },
     getDeltaTime(){
       if(!this.room) return ''
-      return Moment(Moment(this.room.gameEndTime )-Moment(this.room.gameStartTime)).format('mm:ss')
+      return Moment(Moment(this.room.stateEndTime )-Moment(this.room.stateStartTime)).format('mm:ss')
     },
     displayWhen(states){
       return states.indexOf(this.currentState)>-1
