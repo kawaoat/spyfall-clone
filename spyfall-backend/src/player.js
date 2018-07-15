@@ -13,7 +13,8 @@ export default class Player {
     return {
       playerID: this.playerID,
       playerName: this.playerName,
-      isReady: this.isReady
+      isReady: this.isReady,
+      voteCounter: this.voteCounter
     }
   }
 

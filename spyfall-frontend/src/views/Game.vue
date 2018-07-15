@@ -79,11 +79,32 @@
             </b-list-group>
         </div>
 
-
         <div v-if="displayWhen([GAMESTATES.VOTING])">
-            Voting who is spy!
+            Voting who is spy! {{getDeltaTime()}}
+            <div v-if="isNotVoted()">
+              <div v-if="isSpy()" v-for="location in locationList" :key="location.Location">
+                    <b-container>
+              <b-row>
+              <b-col v-for="location in locationList" :key="location.Location" md="6">
+                <b-button class="button w-100">{{location.Location}}</b-button>
+              </b-col>
+              </b-row>
+              </b-container>
+              </div>
+              <b-container v-else>
+                <b-row>
+                  <b-col v-for="location in locationList" :key="location.Location" md="6">
+                    <b-button>{{location.Location}}</b-button>
+                  </b-col>
+                </b-row>
+              </b-container>
+            </div>
+        </div>
+
+        <div v-if="displayWhen([GAMESTATES.ENDING])">
+            Vote result
             <div v-for="player in room.playerList" :key="player.playerID">
-              <b-button class="button w-100" @click="onVote(player.playerID)">{{player.playerName}}</b-button>
+              <b-button class="button w-100" @click="onVote(player.playerID)">{{player.playerName}} : {{player.voteCounter}}</b-button>
             </div>
         </div>
 
@@ -112,7 +133,8 @@ export default {
       playerID:'',
       socket:null,
       role:'',
-      location:''
+      location:'',
+      isVoted:false
     }
   },
   created() {
@@ -129,8 +151,11 @@ export default {
       else if(this.room.gameState === GAMESTATES.VOTING){
         this.setCurrentState(GAMESTATES.VOTING)
       }
+      else if(this.room.gameState === GAMESTATES.ENDING){
+        this.setCurrentState(GAMESTATES.ENDING)
+      }
     })
-
+    
     this.socket.on('playerLocationAndRole',data=>{
       this.role = data.role
       this.location = data.location
@@ -141,12 +166,13 @@ export default {
     onReady(){
       this.socket.emit('ready',{roomID:this.room.roomID})
     },
-    onVote(playerID){
-      this.socket.emit('vote',{playerID})
+    onVote(votedPlayerID){
+      this.socket.emit('vote',{roomID:this.room.roomID, votedPlayerID })
+      this.setCurrentState(GAMESTATES.ENDING)
     },
     getDeltaTime(){
       if(!this.room) return ''
-      return Moment(Moment(this.room.stateEndTime )-Moment(this.room.stateStartTime)).format('mm:ss')
+      return Moment(Moment(this.room.endTime )-Moment(this.room.currentTime)).format('mm:ss')
     },
     displayWhen(states){
       return states.indexOf(this.currentState)>-1
@@ -161,6 +187,12 @@ export default {
     joinRoom(){
       this.socket.emit('join',{"roomID":this.roomIDInput,"playerName":this.playerName})
       this.setCurrentState(GAMESTATES.WAITING)
+    },
+    isNotVoted(){
+      return !this.isVoted
+    },
+    isSpy(){
+      return this.role=='Spy'
     }
   },
   components: {

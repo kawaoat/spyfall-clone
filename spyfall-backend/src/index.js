@@ -17,15 +17,19 @@ const PORT = process.env.PORT || 8000
 const io = Socket(server)
 
 let roomList = []
-ShortID.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ$@')
+ShortID.characters('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@$')
 
 io.on('connection', socket => {
   console.log('connect')
   socket.on('create', data => {
-    console.log('create by ', data.playerName)
     let roomID = ShortID.generate()
+    while (roomID.includes('@') || roomID.includes('$')) {
+      console.log('roomID:', roomID, ' >> regenerate.')
+      roomID = ShortID.generate()
+    }
     createRoom(roomID)
     joinRoom(roomID, socket.id, data.playerName, socket)
+    console.log('room', roomID, 'created by', data.playerName)
     socket.emit('room', getRoomData(roomID))
   })
   socket.on('join', data => {
@@ -43,16 +47,24 @@ io.on('connection', socket => {
         p.socket.emit('playerLocationAndRole', p.getLocationAndRole())
       })
       // startGame(data.roomID)
-      let TimelengthInMinutes = 1
-      room.stateEndTime = Moment().add(TimelengthInMinutes, 'minutes')
-      room.stateStartTime = Moment()
+      let TimelengthInMinutes = 1 / 12
+      room.endTime = Moment().add(TimelengthInMinutes, 'minutes')
+      room.currentTime = Moment()
       room.gameState = GAMESTATES.PLAYING
       gameLoop(room.roomID)
     }
     io.emit('room', getRoomData(data.roomID))
   })
   socket.on('vote', data => {
-    console.log('vote', data)
+    let room = Lodash.find(roomList, room => room.roomID === data.roomID)
+    if (!room) return
+    let player = Lodash.find(room.playerList, p => p.playerID === data.votedPlayerID)
+    if (!player) return
+    player.voteCounter = player.voteCounter + 1
+
+    Lodash.map(room.playerList, p => {
+      p.socket.emit('room', getRoomData(room.roomID))
+    })
   })
 })
 
@@ -84,39 +96,40 @@ const getRandomRole = roles => {
 }
 
 const createRoom = roomID => {
-  roomList.push({
+  var room = {
     roomID: roomID,
     gameState: GAMESTATES.WAITING,
     playerList: [],
-    stateStartTime: '',
-    stateEndTime: ''
-  })
+    curentTime: '',
+    endTime: ''
+  }
+  roomList.push(room)
 }
 
 const gameLoop = roomID => {
   let interval = setInterval(() => {
     let room = Lodash.find(roomList, room => room.roomID === roomID)
     if (room.gameState == GAMESTATES.PLAYING) {
-      if (Moment() >= room.stateEndTime) {
-        let TimelengthInMinutes = 1 / 12
-        room.stateEndTime = Moment().add(TimelengthInMinutes, 'minutes')
-        room.stateStartTime = Moment() // update time
+      room.currentTime = Moment()
+      if (Moment() >= room.endTime) {
+        let TimelengthInMinutes = 1 / 2
+        room.endTime = Moment().add(TimelengthInMinutes, 'minutes')
         room.gameState = GAMESTATES.VOTING
         Lodash.map(room.playerList, p => {
           p.socket.emit('room', getRoomData(roomID))
         })
       } else {
-        room.stateStartTime = Moment() // update time
+        room.currentTime = Moment() // update time
         emitPlayerInRoom(room, 'room', getRoomData(roomID))
       }
     } else if (room.gameState == GAMESTATES.VOTING) {
-      if (Moment() >= room.stateEndTime) {
+      if (Moment() >= room.endTime) {
         room.gameState = GAMESTATES.ENDING
         Lodash.map(room.playerList, p => {
           p.socket.emit('room', getRoomData(roomID))
         })
       } else {
-        room.stateStartTime = Moment() // update time
+        room.currentTime = Moment() // update time
         emitPlayerInRoom(room, 'room', getRoomData(roomID))
       }
     } else if (room.gameState === GAMESTATES.ENDING) {
@@ -129,26 +142,6 @@ const gameLoop = roomID => {
   }, 900)
 }
 
-const startGame = roomID => {
-  let room = Lodash.find(roomList, room => room.roomID === roomID)
-  room.gameState = GAMESTATES.PLAYING
-  room.stateStartTime = Moment()
-  let TimelengthInMinutes = 1 / 12
-  room.stateEndTime = Moment().add(TimelengthInMinutes, 'minutes')
-  let interval = setInterval(() => {
-    if (Moment() >= room.stateEndTime) {
-      room.gameState = GAMESTATES.VOTING
-      Lodash.map(room.playerList, p => {
-        p.socket.emit('room', getRoomData(roomID))
-      })
-
-      clearInterval(interval)
-    } else {
-      room.stateStartTime = Moment() // update time
-      emitPlayerInRoom(room, 'room', getRoomData(roomID))
-    }
-  }, 900)
-}
 const checkGameIsReady = (roomID, playerID) => {
   let room = Lodash.find(roomList, room => room.roomID === roomID)
   if (!room) return
@@ -183,8 +176,8 @@ const getRoomData = roomID => {
     roomID: roomID,
     gameState: room.gameState,
     playerList: getPlayerListByRoomID(roomID),
-    stateStartTime: room.stateStartTime,
-    stateEndTime: room.stateEndTime
+    curentTime: room.curentTime,
+    endTime: room.endTime
   }
 }
 
