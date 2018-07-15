@@ -97,10 +97,10 @@ const gameLoop = roomID => {
   let interval = setInterval(() => {
     let room = Lodash.find(roomList, room => room.roomID === roomID)
     if (room.gameState == GAMESTATES.PLAYING) {
-      room.stateStartTime = Moment()
       if (Moment() >= room.stateEndTime) {
         let TimelengthInMinutes = 1 / 12
         room.stateEndTime = Moment().add(TimelengthInMinutes, 'minutes')
+        room.stateStartTime = Moment() // update time
         room.gameState = GAMESTATES.VOTING
         Lodash.map(room.playerList, p => {
           p.socket.emit('room', getRoomData(roomID))

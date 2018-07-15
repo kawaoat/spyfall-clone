@@ -47,8 +47,8 @@
   <b-btn v-b-toggle.collapse1 variant="info">Show role</b-btn>
   <b-collapse id="collapse1" class="mt-2">
     <b-card>
-      <p class="card-text">You are :{{role}}.</p>
-      <p class="card-text" v-if="location" >Location :{{location}}</p>
+      <p class="card-text">You are :<strong>{{role}}</strong>.</p>
+      <p class="card-text" v-if="location" >Location :<strong>{{location}}</strong></p>
     </b-card>
   </b-collapse>
 </div>
