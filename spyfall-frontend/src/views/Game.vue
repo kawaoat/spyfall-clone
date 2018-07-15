@@ -47,8 +47,8 @@
   <b-btn v-b-toggle.collapse1 variant="info">Show role</b-btn>
   <b-collapse id="collapse1" class="mt-2">
     <b-card>
-      <p class="card-text">You are :<strong>{{role}}</strong>.</p>
-      <p class="card-text" v-if="location" >Location :<strong>{{location}}</strong></p>
+      <p class="card-text">You are :{{role}}.</p>
+      <p class="card-text" v-if="location" >Location :{{location}}</p>
     </b-card>
   </b-collapse>
 </div>
@@ -83,13 +83,7 @@
             Voting who is spy! {{getDeltaTime()}}
             <div v-if="isNotVoted()">
               <div v-if="isSpy()" v-for="location in locationList" :key="location.Location">
-                    <b-container>
-              <b-row>
-              <b-col v-for="location in locationList" :key="location.Location" md="6">
                 <b-button class="button w-100">{{location.Location}}</b-button>
-              </b-col>
-              </b-row>
-              </b-container>
               </div>
               <b-container v-else>
                 <b-row>
@@ -102,10 +96,12 @@
         </div>
 
         <div v-if="displayWhen([GAMESTATES.ENDING])">
-            You {{}}
+            You {{gameResult}}
+            vote result
             <div v-for="player in room.playerList" :key="player.playerID">
-              <b-button class="button w-100" @click="onVote(player.playerID)">{{player.playerName}} : {{player.voteCounter}}</b-button>
+              <b-button class="button w-100" >{{player.playerName}} : {{player.voteCounter}}</b-button>
             </div>
+            
         </div>
 
       </div>
