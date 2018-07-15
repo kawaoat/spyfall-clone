@@ -23,13 +23,13 @@ io.on('connection', socket => {
   console.log('connect')
   socket.on('create', data => {
     let roomID = ShortID.generate()
-    while(roomID.includes('@') || roomID.includes('$')){
-      console.log('roomID:',roomID,' >> regenerate.')
+    while (roomID.includes('@') || roomID.includes('$')) {
+      console.log('roomID:', roomID, ' >> regenerate.')
       roomID = ShortID.generate()
     }
     createRoom(roomID)
     joinRoom(roomID, socket.id, data.playerName, socket)
-    console.log('room' , roomID, 'created by', data.playerName)
+    console.log('room', roomID, 'created by', data.playerName)
     socket.emit('room', getRoomData(roomID))
   })
   socket.on('join', data => {
@@ -47,7 +47,7 @@ io.on('connection', socket => {
         p.socket.emit('playerLocationAndRole', p.getLocationAndRole())
       })
       // startGame(data.roomID)
-      let TimelengthInMinutes = 1/12
+      let TimelengthInMinutes = 1 / 12
       room.endTime = Moment().add(TimelengthInMinutes, 'minutes')
       room.currentTime = Moment()
       room.gameState = GAMESTATES.PLAYING
@@ -57,15 +57,14 @@ io.on('connection', socket => {
   })
   socket.on('vote', data => {
     let room = Lodash.find(roomList, room => room.roomID === data.roomID)
-    if(!room) return
+    if (!room) return
     let player = Lodash.find(room.playerList, p => p.playerID === data.votedPlayerID)
     if (!player) return
-    player.voteCounter=player.voteCounter+1
-    
+    player.voteCounter = player.voteCounter + 1
+
     Lodash.map(room.playerList, p => {
       p.socket.emit('room', getRoomData(room.roomID))
     })
-    
   })
 })
 
@@ -115,7 +114,7 @@ const gameLoop = roomID => {
     if (room.gameState == GAMESTATES.PLAYING) {
       room.currentTime = Moment()
       if (Moment() >= room.endTime) {
-        let TimelengthInMinutes = 1/2
+        let TimelengthInMinutes = 1 / 2
         room.endTime = Moment().add(TimelengthInMinutes, 'minutes')
         room.gameState = GAMESTATES.VOTING
         Lodash.map(room.playerList, p => {
@@ -168,7 +167,6 @@ const gameLoop = roomID => {
     }
   }, 900)
 }
-
 
 const checkGameIsReady = (roomID, playerID) => {
   let room = Lodash.find(roomList, room => room.roomID === roomID)
