@@ -1,21 +1,15 @@
-import Vue from 'vue'
-import Router from 'vue-router'
-import Home from './views/Home.vue'
-import Room from './views/Room.vue'
+import Vue from 'vue';
+import Router from 'vue-router';
+import Game from './views/Home.vue';
 
-Vue.use(Router)
+Vue.use(Router);
 
 export default new Router({
-  routes: [
-    {
-      path: '/',
-      name: 'home',
-      component: Home
-    },
-    {
-      path: '/:access',
-      name: 'room',
-      component: Room
-    }
-  ]
-})
+	routes: [
+		{
+			path: '/',
+			name: 'game',
+			component: Game
+		}
+	]
+});

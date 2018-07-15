@@ -6,11 +6,11 @@
         <b-form-input class="spy-input" v-if="displayWhen([GAMESTATES.NEW,GAMESTATES.JOIN])"
           v-model="playerName" type="text" placeholder="Enter your name."></b-form-input>
         <b-form-input class="spy-input" v-if="displayWhen([GAMESTATES.JOIN])"
-          v-model="roomID" type="text" placeholder="Enter access code."></b-form-input>
+          v-model="roomIDInput" type="text" placeholder="Enter access code."></b-form-input>
         <div v-if="displayWhen([GAMESTATES.WAITING])">
           <h1>{{room.roomID}}</h1>
           <hr>
-          <div v-for="player in room.playerList" :key="player.playerName">{{player.playerName}}</div>
+          <div v-for="player in room.playerList" :key="player.playerID">{{player.playerName}} isReady:{{player.isReady}}</div>
         </div>
         <b-row v-if="displayWhen([GAMESTATES.INITIAL])">
           <b-col cols="6">
@@ -33,14 +33,27 @@
         </b-row>
         <b-row v-if="displayWhen([GAMESTATES.WAITING])">
           <b-col cols="6">
-            <b-button class="button" @click="setCurrentState(GAMESTATES.PLAYING)">Start</b-button>
+            <b-button class="button" @click="onReady()">Ready</b-button>
           </b-col>
           <b-col cols="6">
             <b-button class="button" @click="setCurrentState(GAMESTATES.INITIAL)">Leave</b-button>
           </b-col>
         </b-row>
-        <div>
+
+        <div v-if="displayWhen([GAMESTATES.PLAYING])">
+            is playing
+            {{getDeltaTime()}}
         </div>
+
+
+        <div v-if="displayWhen([GAMESTATES.VOTING])">
+            Voting who is spy!
+            <div v-for="player in room.playerList" :key="player.playerID">
+              {{player.playerName}} 
+              <b-button class="button" @click="onVote(player.playerID)">Vote</b-button>
+            </div>
+        </div>
+
       </div>
     </b-container>
     {{room}}
@@ -48,28 +61,44 @@
 </template>
 <script>
 // @ is an alias to /src
-
 import GAMESTATES from '@/constants/gameStates'
 import io from 'socket.io-client'
+import Moment from 'moment'
 export default {
   name: 'home',
-  data(){
+  data() {
     return{  
       playerName:'',
-      room:[],
-      roomID:'',
+      room:{},
+      roomIDInput:'',
       currentState:GAMESTATES.INITIAL,
       GAMESTATES:GAMESTATES
     }
   },
-  created(){
+  created() {
     let serverURL = 'localhost:8000'
     this.socket = io(serverURL)
     this.socket.on('room',(room)=>{
       this.room = room
+      if(this.room.gameState === GAMESTATES.PLAYING){
+        this.setCurrentState(GAMESTATES.PLAYING)
+      }
+      else if(this.room.gameState === GAMESTATES.VOTING){
+        this.setCurrentState(GAMESTATES.VOTING)
+      }
     })
   },
   methods:{
+    onReady(){
+      this.socket.emit('ready',{roomID:this.room.roomID})
+    },
+    onVote(playerID){
+      this.socket.emit('vote',{playerID})
+    },
+    getDeltaTime(){
+      if(!this.room) return ''
+      return Moment(Moment(this.room.gameEndTime )-Moment(this.room.gameStartTime)).format('mm:ss')
+    },
     displayWhen(states){
       return states.indexOf(this.currentState)>-1
     },
@@ -81,7 +110,7 @@ export default {
       this.setCurrentState(GAMESTATES.WAITING)
     },
     joinRoom(){
-      this.socket.emit('join',{"roomID":this.roomID,"playerName":this.playerName})
+      this.socket.emit('join',{"roomID":this.roomIDInput,"playerName":this.playerName})
       this.setCurrentState(GAMESTATES.WAITING)
     }
   },

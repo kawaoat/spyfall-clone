@@ -1,7 +1,8 @@
-export default{
-  INITIAL: 'I',
-  NEW: 'N',
-  JOIN: 'J',
-  WAITING: 'W',
-  PLAYING: 'P'
-}
+export default {
+	INITIAL: 'I',
+	NEW: 'N',
+	JOIN: 'J',
+	WAITING: 'W',
+	PLAYING: 'P',
+	VOTING: 'V'
+};
