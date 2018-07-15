@@ -88,7 +88,7 @@ const startGame = roomID => {
   let room = Lodash.find(roomList, room => room.roomID === roomID)
   room.gameState = GAMESTATES.PLAYING
   room.gameStartTime = Moment()
-  let TimelengthInMinutes = 1/12
+  let TimelengthInMinutes = 1 / 12
   room.gameEndTime = Moment().add(TimelengthInMinutes, 'minutes')
   let interval = setInterval(() => {
     if (Moment() >= room.gameEndTime) {
