@@ -79,11 +79,19 @@
             </b-list-group>
         </div>
 
-
         <div v-if="displayWhen([GAMESTATES.VOTING])">
             Voting who is spy! {{getDeltaTime()}}
-            <div v-for="player in room.playerList" :key="player.playerID">
-              <b-button class="button w-100" @click="onVote(player.playerID)">{{player.playerName}}</b-button>
+            <div v-if="isNotVoted()">
+              <div v-if="isSpy()" v-for="location in locationList" :key="location.Location">
+                <b-button class="button w-100">{{location.Location}}</b-button>
+              </div>
+              <b-container v-else>
+                <b-row>
+                  <b-col v-for="location in locationList" :key="location.Location" md="6">
+                    <b-button>{{location.Location}}</b-button>
+                  </b-col>
+                </b-row>
+              </b-container>
             </div>
         </div>
 
@@ -119,7 +127,8 @@ export default {
       playerID:'',
       socket:null,
       role:'',
-      location:''
+      location:'',
+      isVoted:false
     }
   },
   created() {
@@ -136,8 +145,11 @@ export default {
       else if(this.room.gameState === GAMESTATES.VOTING){
         this.setCurrentState(GAMESTATES.VOTING)
       }
+      else if(this.room.gameState === GAMESTATES.ENDING){
+        this.setCurrentState(GAMESTATES.ENDING)
+      }
     })
-
+    
     this.socket.on('playerLocationAndRole',data=>{
       this.role = data.role
       this.location = data.location
@@ -169,6 +181,12 @@ export default {
     joinRoom(){
       this.socket.emit('join',{"roomID":this.roomIDInput,"playerName":this.playerName})
       this.setCurrentState(GAMESTATES.WAITING)
+    },
+    isNotVoted(){
+      return !this.isVoted
+    },
+    isSpy(){
+      return this.role=='Spy'
     }
   },
   components: {

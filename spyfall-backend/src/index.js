@@ -113,7 +113,7 @@ const gameLoop = roomID => {
     if (room.gameState == GAMESTATES.PLAYING) {
       room.currentTime = Moment()
       if (Moment() >= room.endTime) {
-        let TimelengthInMinutes = 1 / 12
+        let TimelengthInMinutes = 1/2
         room.endTime = Moment().add(TimelengthInMinutes, 'minutes')
         room.gameState = GAMESTATES.VOTING
         Lodash.map(room.playerList, p => {
