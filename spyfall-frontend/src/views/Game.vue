@@ -81,7 +81,7 @@
 
 
         <div v-if="displayWhen([GAMESTATES.VOTING])">
-            Voting who is spy!
+            Voting who is spy! {{getDeltaTime()}}
             <div v-for="player in room.playerList" :key="player.playerID">
               <b-button class="button w-100" @click="onVote(player.playerID)">{{player.playerName}}</b-button>
             </div>

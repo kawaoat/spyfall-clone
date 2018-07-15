@@ -47,7 +47,7 @@ io.on('connection', socket => {
         p.socket.emit('playerLocationAndRole', p.getLocationAndRole())
       })
       // startGame(data.roomID)
-      let TimelengthInMinutes = 1
+      let TimelengthInMinutes = 1/12
       room.endTime = Moment().add(TimelengthInMinutes, 'minutes')
       room.currentTime = Moment()
       room.gameState = GAMESTATES.PLAYING
@@ -139,28 +139,6 @@ const gameLoop = roomID => {
         p.socket.emit('room', getRoomData(roomID))
       })
       clearInterval(interval)
-    }
-  }, 900)
-}
-
-const startGame = roomID => {
-  let room = Lodash.find(roomList, room => room.roomID === roomID)
-  room.gameState = GAMESTATES.PLAYING
-  room.currentTime = Moment()
-  let TimelengthInMinutes = 1 / 12
-  room.endTime = Moment().add(TimelengthInMinutes, 'minutes')
-  let interval = setInterval(() => {
-    if (Moment() >= room.endTime) {
-      room.gameState = GAMESTATES.VOTING
-      
-      Lodash.map(room.playerList, p => {
-        p.socket.emit('room', getRoomData(roomID))
-      })
-      clearInterval(interval)
-
-    } else {
-      room.currentTime = Moment() // update time
-      emitPlayerInRoom(room, 'room', getRoomData(roomID))
     }
   }, 900)
 }
