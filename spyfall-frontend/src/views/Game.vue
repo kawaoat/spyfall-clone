@@ -87,8 +87,8 @@
               </div>
               <b-container v-else>
                 <b-row>
-                  <b-col v-for="location in locationList" :key="location.Location" md="6">
-                    <b-button>{{location.Location}}</b-button>
+                  <b-col v-for="player in room.playerList" :key="player.playerID" md="6">
+                    <b-button class="button w-100" @click="onVote(player.playerID)">{{player.playerName}} : {{player.voteCounter}}</b-button>
                   </b-col>
                 </b-row>
               </b-container>
@@ -167,7 +167,9 @@ export default {
     },
     onVote(votedPlayerID){
       this.socket.emit('vote',{roomID:this.room.roomID, votedPlayerID })
-      this.setCurrentState(GAMESTATES.ENDING)
+    },
+    sentSpyAnswer(spyAnswer){
+      this.socket.emit('vote',{spyAnswer})
     },
     getDeltaTime(){
       if(!this.room) return ''
