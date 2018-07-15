@@ -2,7 +2,7 @@ import Express from 'express'
 import Http from 'http'
 import Socket from 'socket.io'
 import ShortID from 'shortid'
-import Moment from 'moment'
+import Moment, { max } from 'moment'
 import Lodash from 'lodash'
 
 import GAMESTATES from './constants/gameStates'
@@ -101,6 +101,8 @@ const createRoom = roomID => {
     roomID: roomID,
     gameState: GAMESTATES.WAITING,
     playerList: [],
+    mostVotedPlayer: '',
+    spyAnswer: '',
     curentTime: '',
     endTime: ''
   }
@@ -125,9 +127,33 @@ const gameLoop = roomID => {
       }
     } else if (room.gameState == GAMESTATES.VOTING) {
       if (Moment() >= room.endTime) {
+        let maxVoteCounter = 0
+        let playerList = room.playerList
+        for(i = 0; i < playerList.length; i++) { 
+          maxVoteCounter = (maxVoteCounter>playerList[i].voteCounter)?maxVoteCounter:playerList[i].voteCounter
+        }
+        room.mostVotedPlayer = Lodash.filter(playerList, p => p.voteCounter === maxVoteCounter)
+        let VotedSpyPlayer = (Lodash.find(room.mostVotedPlayer, p => p.role === 'Spy'))
+        if(VotedSpyPlayer){ //Case: spy is the most vote 
+          room.playerList = Lodash.map(room.playerList, p => {
+            if(p.role === 'Spy')
+              p.gameResult='lose'
+            else
+              p.gameResult='Win'
+          })
+        }
+        else{
+          room.playerList = Lodash.map(room.playerList, p => {
+            if(p.role === 'Spy')
+              p.gameResult='Win'
+            else
+              p.gameResult='lose'
+          })
+        
         room.gameState = GAMESTATES.ENDING
         Lodash.map(room.playerList, p => {
           p.socket.emit('room', getRoomData(roomID))
+          p.socket.emit('gameResult', p.getGameResult())
         })
       } else {
         room.currentTime = Moment() // update time

@@ -7,6 +7,7 @@ export default class Player {
     this.role = ''
     this.location = ''
     this.voteCounter = 0
+    this.gameResult = ''
   }
 
   getData () {
@@ -22,6 +23,12 @@ export default class Player {
     return {
       role: this.role,
       location: this.location
+    }
+  }
+
+  getGameResult(){
+    return {
+      gameResult: this.gameResult
     }
   }
 }

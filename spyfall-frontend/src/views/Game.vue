@@ -96,7 +96,7 @@
         </div>
 
         <div v-if="displayWhen([GAMESTATES.ENDING])">
-            Vote result
+            You {{}}
             <div v-for="player in room.playerList" :key="player.playerID">
               <b-button class="button w-100" @click="onVote(player.playerID)">{{player.playerName}} : {{player.voteCounter}}</b-button>
             </div>
@@ -128,32 +128,35 @@ export default {
       socket:null,
       role:'',
       location:'',
-      isVoted:false
+      isVoted:false,
+      gameResult:''
     }
   },
   created() {
     let serverURL = 'localhost:8000'
     this.socket = io(serverURL)
     this.socket.on('connect', () => {
-    this.playerID = this.socket.id
-    this.socket.on('room',(room)=>{
-      this.room = room
-      console.log(room)
-      if(this.room.gameState === GAMESTATES.PLAYING){
-        this.setCurrentState(GAMESTATES.PLAYING)
-      }
-      else if(this.room.gameState === GAMESTATES.VOTING){
-        this.setCurrentState(GAMESTATES.VOTING)
-      }
-      else if(this.room.gameState === GAMESTATES.ENDING){
-        this.setCurrentState(GAMESTATES.ENDING)
-      }
-    })
-    
-    this.socket.on('playerLocationAndRole',data=>{
-      this.role = data.role
-      this.location = data.location
-    })
+      this.playerID = this.socket.id
+      this.socket.on('room',(room)=>{
+        this.room = room
+        console.log(room)
+        if(this.room.gameState === GAMESTATES.PLAYING){
+          this.setCurrentState(GAMESTATES.PLAYING)
+        }
+        else if(this.room.gameState === GAMESTATES.VOTING){
+          this.setCurrentState(GAMESTATES.VOTING)
+        }
+        else if(this.room.gameState === GAMESTATES.ENDING){
+          this.setCurrentState(GAMESTATES.ENDING)
+        }
+      })
+      this.socket.on('playerLocationAndRole',data=>{
+        this.role = data.role
+        this.location = data.location
+      })
+      this.socket.on('gameResult',gameResult => {
+        this.gameResult = gameResult
+      })
     })
   },
   methods:{
