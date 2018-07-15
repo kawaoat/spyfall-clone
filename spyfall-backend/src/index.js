@@ -148,7 +148,7 @@ const gameLoop = roomID => {
             else
               p.gameResult='lose'
           })
-        
+        }
         room.gameState = GAMESTATES.ENDING
         Lodash.map(room.playerList, p => {
           p.socket.emit('room', getRoomData(roomID))
