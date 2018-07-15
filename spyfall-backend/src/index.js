@@ -128,7 +128,7 @@ const gameLoop = roomID => {
       if (Moment() >= room.endTime) {
         let maxVoteCounter = 0
         let playerList = room.playerList
-        for(i = 0; i < playerList.length; i++) { 
+        for(let i = 0; i < playerList.length; i++) { 
           maxVoteCounter = (maxVoteCounter>playerList[i].voteCounter)?maxVoteCounter:playerList[i].voteCounter
         }
         room.mostVotedPlayer = Lodash.filter(playerList, p => p.voteCounter === maxVoteCounter)
