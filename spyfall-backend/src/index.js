@@ -111,10 +111,11 @@ const createRoom = roomID => {
 const gameLoop = roomID => {
   let interval = setInterval(() => {
     let room = Lodash.find(roomList, room => room.roomID === roomID)
+    if (!room) return
     if (room.gameState == GAMESTATES.PLAYING) {
       room.currentTime = Moment()
       if (Moment() >= room.endTime) {
-        let TimelengthInMinutes = 1 / 2
+        let TimelengthInMinutes = 1 / 6
         room.endTime = Moment().add(TimelengthInMinutes, 'minutes')
         room.gameState = GAMESTATES.VOTING
         Lodash.map(room.playerList, p => {
@@ -128,29 +129,29 @@ const gameLoop = roomID => {
       if (Moment() >= room.endTime) {
         let maxVoteCounter = 0
         let playerList = room.playerList
-        for(let i = 0; i < playerList.length; i++) { 
-          maxVoteCounter = (maxVoteCounter>playerList[i].voteCounter)?maxVoteCounter:playerList[i].voteCounter
+        for (let i = 0; i < playerList.length; i++) {
+          maxVoteCounter =
+						maxVoteCounter > playerList[i].voteCounter ? maxVoteCounter : playerList[i].voteCounter
         }
         room.mostVotedPlayer = Lodash.filter(playerList, p => p.voteCounter === maxVoteCounter)
-        let VotedSpyPlayer = (Lodash.find(room.mostVotedPlayer, p => p.role === 'Spy'))
-        if(VotedSpyPlayer){ //Case: spy is the most vote 
+        let VotedSpyPlayer = Lodash.find(room.mostVotedPlayer, p => p.role === 'Spy')
+        if (VotedSpyPlayer) {
+          // Case: spy is the most vote
           room.playerList = Lodash.map(room.playerList, p => {
-            if(p.role === 'Spy')
-              p.gameResult='lose'
-            else
-              p.gameResult='Win'
+            if (p.role === 'Spy') p.gameResult = 'lose'
+            else p.gameResult = 'Win'
+            return p
           })
-        }
-        else{
+        } else {
           room.playerList = Lodash.map(room.playerList, p => {
-            if(p.role === 'Spy')
-              p.gameResult='Win'
-            else
-              p.gameResult='lose'
+            if (p.role === 'Spy') p.gameResult = 'Win'
+            else p.gameResult = 'lose'
+            return p
           })
         }
         room.gameState = GAMESTATES.ENDING
         Lodash.map(room.playerList, p => {
+          console.log(p)
           p.socket.emit('room', getRoomData(roomID))
           p.socket.emit('gameResult', p.getGameResult())
         })
