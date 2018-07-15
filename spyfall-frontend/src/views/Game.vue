@@ -132,7 +132,7 @@ export default {
     }
   },
   created() {
-    let serverURL = '192.168.180.242:8000'
+    let serverURL = 'spyfall.game.safesuk.fun'
     // 'localhost:8000'
     this.socket = io(serverURL)
     this.socket.on('connect', () => {
