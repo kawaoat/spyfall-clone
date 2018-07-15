@@ -10,7 +10,7 @@ import Locationlist from './constants/locations'
 import Player from './player'
 
 import { getRandomInt } from './utils'
-const GAME_TIME = 2
+const GAME_TIME = 1.5
 const app = Express()
 const server = Http.createServer(app)
 
@@ -28,6 +28,7 @@ io.on('connection', socket => {
       console.log('roomID:', roomID, ' >> regenerate.')
       roomID = ShortID.generate()
     }
+    roomID = roomID.substring(0, 4)
     createRoom(roomID)
     joinRoom(roomID, socket.id, data.playerName, socket)
     console.log('room', roomID, 'created by', data.playerName)
@@ -162,14 +163,14 @@ const gameLoop = roomID => {
         if (VotedSpyPlayer && room.spyAnswer !== room.location) {
           // Case: spy is the most vote
           room.playerList = Lodash.map(room.playerList, p => {
-            if (p.role === 'Spy') p.gameResult = 'lose'
+            if (p.role === 'Spy') p.gameResult = 'Lose'
             else p.gameResult = 'Win'
             return p
           })
         } else {
           room.playerList = Lodash.map(room.playerList, p => {
             if (p.role === 'Spy') p.gameResult = 'Win'
-            else p.gameResult = 'lose'
+            else p.gameResult = 'Lose'
             return p
           })
         }

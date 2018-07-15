@@ -80,7 +80,8 @@
         </div>
 
         <div v-if="displayWhen([GAMESTATES.VOTING])">
-            Voting who is spy! {{getDeltaTime()}}
+            <div v-if="isSpy()">Voting who is spy! {{getDeltaTime()}}</div>
+            <div v-if="!isSpy()">Guess location! {{getDeltaTime()}}</div>
             <div v-if="isNotVoted()">
               <div v-if="isSpy()" v-for="location in locationList" :key="location.Location">
                 <b-button class="button w-100" @click="sentSpyAnswer(location.Location)">{{location.Location}}</b-button>
@@ -89,6 +90,7 @@
                 <b-button class="button w-100" @click="onVote(player.playerID)">{{player.playerName}} : {{player.voteCounter}}</b-button>
               </div>
             </div>
+            <div v-if="!isNotVoted()">Waitng...</div>
         </div>
 
         <div v-if="displayWhen([GAMESTATES.ENDING])">

@@ -1,7 +1,6 @@
 <template>
   <div id="app">
     <router-view/>
-    <p>ThisSpyfall designed by Alexandr Ushan, published by Hobby World</p>
   </div>
 </template>
 
