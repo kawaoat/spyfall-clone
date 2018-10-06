@@ -97,5 +97,9 @@ export default [
 	{
 		Location: 'Movie studio',
 		Roles: ['Stunt Man', 'Sound Engineer', 'Camera Man', 'Director', 'Costume Artist', 'Producer', 'Actor']
+	},
+	{
+		Location: 'Spy school',
+		Roles: ['Ninja', 'Spy', 'Ninja teacher', 'Spy master', 'Dog', 'Gardener', 'Actor']
 	}
 ];
