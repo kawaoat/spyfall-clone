@@ -6,3 +6,7 @@ Cloning spyfall boardgame
 
 - spyfall-backend 
     - using Node.js and Socket.io
+
+- Contributors
+    - Kawaoat
+    - Safe
